@@ -10,101 +10,104 @@ interface Props {
 
 const { phaseName, percentage, shadow, animate } = Astro.props;
 
+const p = Number(percentage);
+
+// Determine if we are in the Waning phase (Full -> New)
+// Waning phases have the shadow on the Right side.
+// Waxing phases have the shadow on the Left side.
 const isWaning = [
   PhaseName.Waning,
   PhaseName.LastQuarter,
   PhaseName.NewMoon,
 ].includes(phaseName);
-const percentageToRender = [PhaseName.NewMoon, PhaseName.FullMoon].includes(
-  phaseName
-)
-  ? 50
-  : Math.floor(Number(percentage) - 50) * 0.84 + 0.16;
+
+// Calculate the horizontal radius of the terminator ellipse (0 to 50)
+// The terminator moves from one edge to the other.
+const rx = Math.abs(50 - p);
+const ry = 50;
+
+// SVG Path Construction
+// We draw the SHADOW (Darkness).
+
+// 1. Backbone: The fixed semi-circle of the shadow.
+// If Waning: Shadow is on Right. Backbone is Right Semi-Circle.
+// If Waxing: Shadow on Left. Backbone is Left Semi-Circle.
+const sweepBackbone = isWaning ? 1 : 0;
+const backbonePath = `M 50 0 A 50 50 0 0 ${sweepBackbone} 50 100`;
+
+// 2. Terminator: The moving semi-ellipse closing the shape.
+// Goes from Bottom (50, 100) to Top (50, 0).
+let sweepTerminator;
+if (!isWaning) {
+  // Waxing (Shadow Left)
+  // P < 50: Crescent (More Shadow). Terminator bulges Right (1).
+  // P > 50: Gibbous (Less Shadow). Terminator bulges Left (0).
+  sweepTerminator = p < 50 ? 1 : 0;
+} else {
+  // Waning (Shadow Right)
+  // P < 50: Crescent (More Shadow). Terminator bulges Left (0).
+  // P > 50: Gibbous (Less Shadow). Terminator bulges Right (1).
+  sweepTerminator = p < 50 ? 0 : 1;
+}
+
+// Ensure rx is not exactly 0 to avoid SVG rendering quirks
+const safeRx = Math.max(0.1, rx);
+
+const terminatorPath = `A ${safeRx} ${ry} 0 0 ${sweepTerminator} 50 0`;
+
+const shadowD = `${backbonePath} ${terminatorPath} Z`;
 ---
 
-<figure class="relative p-[10%] overflow-hidden w-full aspect-square stage">
-  <div
-    id="moon"
-    class="m-auto flex justify-center items-center"
-    style=`
-        ${shadow ? 'box-shadow: 0px 0px .2em .1em #ffffff33;' : ''}
-        ${animate ? 'animation: move-map 120s infinite linear;' : 'background-position-x: 60%'}
-      `
-  >
-  </div>
-  <div
-    id="moon-shape"
-    class:list={[
-      "w-full h-full absolute top-0 left-0",
-      {
-        "rotate-[-0deg]": ![
-          PhaseName.LastQuarter,
-          PhaseName.FirstQuarter,
-        ].includes(phaseName),
-      },
-    ]}
-  >
-    <svg width="100%" height="100%" viewBox="0 0 100 100">
-      <filter id="dropshadow" height="105%">
-        <feGaussianBlur in="SourceGraphic" stdDeviation="2.5"></feGaussianBlur>
-        <!-- stdDeviation is how much to blur -->
-      </filter>
+<div class="moon-container relative aspect-square w-full">
+  <!-- Moon Container with Masking -->
+  <div class="absolute inset-0 rounded-full bg-black">
+    <!-- Moon Texture (Background Image) -->
+    <!-- We use a div with background-image to support background-position animation properly -->
+    <div
+      class="absolute inset-0 w-full h-full rounded-full overflow-hidden"
+      style={shadow ? "box-shadow: 0 0 15px 2px rgba(255, 255, 255, 0.3);" : ""}
+    >
+      <div
+        class="moon-texture absolute inset-0 w-full h-full"
+        style={animate
+          ? "animation: move-map 120s infinite linear;"
+          : "background-position-x: 60%;"}
+      >
+      </div>
+    </div>
+
+    <!-- Shadow Overlay -->
+    <svg
+      viewBox="0 0 100 100"
+      class="absolute inset-0 w-full h-full pointer-events-none scale-110"
+      preserveAspectRatio="none"
+    >
+      <defs>
+        <filter id="dropshadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="2.5"
+          ></feGaussianBlur>
+        </filter>
+      </defs>
       <path
-        d={`M 50 1 A 49,49 0
-                ${isWaning ? "0,1" : "1,0"}
-                50,100 A
-                ${percentageToRender},50
-                0
-                ${(isWaning && percentage < 50) || (!isWaning && percentage > 50) ? "0,1" : "1,0"}
-                50,1`}
-        stroke-width="0"
+        d={shadowD}
+        fill="rgba(0, 0, 0, 0.87)"
         stroke="none"
-        fill="#000000F1"
-        style="filter:url(#dropshadow)"></path>
+        shape-rendering="geometricPrecision"
+        class="moon-shadow-path"></path>
     </svg>
   </div>
-</figure>
+</div>
 
 <style>
-  #moon {
-    width: 100%;
-    height: 100%;
+  .moon-texture {
     background-image: url("/moon.webp");
-    background-position-y: center;
     background-size: 250% auto;
-    border-radius: 50%;
+    background-position-y: center;
     transform: rotate(170deg);
   }
 
-  #moon:before {
-    content: "";
-    position: absolute;
-    top: 5%;
-    left: 5%;
-    width: 90%;
-    height: 90%;
-    border-radius: 50%;
-    z-index: 2;
-  }
-
-  @keyframes animation {
-    to {
-      background-position-x: right;
-    }
-  }
-
-  #moon .shadow {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
-  }
-
-  .stage {
-    width: 100%;
-    display: inline-block;
-    perspective: 400%;
-    perspective-origin: 50% 50%;
+  .moon-shadow-path {
+    filter: url(#dropshadow);
   }
 
   @keyframes move-map {
