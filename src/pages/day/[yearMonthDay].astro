@@ -2,7 +2,7 @@
 import type { GetStaticPaths } from "astro";
 import Layout from "@/layouts/Layout.astro";
 import Moon from "@/components/Moon.astro";
-import { getMoonData } from "@/services/moonApi";
+import { getMoonData, getYearsFromMoonData } from "@/services/moonApi";
 import { i18n } from "@/utils/i18n.utils";
 
 const yearMonthDay = Astro.params.yearMonthDay;
@@ -35,7 +35,7 @@ const phaseLimits = Object.entries(moonData.phase).filter(
 
 // Paths will look like /day/2023-1-1 for 2023, 2024 and 2025 years for now
 export const getStaticPaths = (() => {
-  const years = [2023, 2024, 2025];
+  const years = getYearsFromMoonData();
 
   const paths = years
     .map((year) =>

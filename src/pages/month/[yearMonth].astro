@@ -2,11 +2,11 @@
 import type { GetStaticPaths } from "astro";
 import Layout from "@/layouts/Layout.astro";
 import Moon from "@/components/Moon.astro";
-import { getMoonData } from "@/services/moonApi";
+import { getMoonData, getYearsFromMoonData } from "@/services/moonApi";
 import { i18n } from "@/utils/i18n.utils";
 import type { NameDay } from "@/utils/types.utils";
 
-const years = [2023, 2024, 2025];
+const years = getYearsFromMoonData();
 
 const yearMonth = (Astro.params as any).yearMonth;
 
@@ -28,7 +28,7 @@ const previousYear =
   previousMonth === 12 && years.includes(year - 1) ? year - 1 : year;
 
 export const getStaticPaths = (() => {
-  const years = [2023, 2024, 2025];
+  const years = getYearsFromMoonData();
   const paths = years
     .map((year) =>
       Array.from({ length: 12 }, (_, i) => {
