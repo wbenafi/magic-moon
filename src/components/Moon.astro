@@ -32,7 +32,7 @@ const ry = 50;
 // 1. Backbone: The fixed semi-circle of the shadow.
 // If Waning: Shadow is on Right. Backbone is Right Semi-Circle.
 // If Waxing: Shadow on Left. Backbone is Left Semi-Circle.
-const sweepBackbone = isWaning ? 1 : 0;
+const sweepBackbone = isWaning ? 0 : 1;
 const backbonePath = `M 50 0 A 50 50 0 0 ${sweepBackbone} 50 100`;
 
 // 2. Terminator: The moving semi-ellipse closing the shape.
