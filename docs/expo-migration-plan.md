@@ -40,7 +40,7 @@ This plan is intentionally split into small phases so each phase can be delivere
 - `apps/mobile` (or root Expo app, depending on repository preference).
 - React Native + Expo + TypeScript.
 - Navigation with `expo-router` (recommended for route parity) or React Navigation stack/tab equivalent.
-- Shared domain modules copied/adapted from web app:
+- Domain modules can be copied/adapted directly into the Expo app (no requirement to keep web/mobile shared files, since the NextJS app will be deprecated later):
   - `src/domain/moonApi.ts`
   - `src/domain/types.ts`
   - `src/domain/i18n.ts`
@@ -72,13 +72,13 @@ This plan is intentionally split into small phases so each phase can be delivere
 
 ---
 
-### Phase 1 — Shared domain parity (data/types/i18n)
-**Goal:** Port logic modules exactly as-is so data behavior matches web app.
+### Phase 1 — Domain parity (data/types/i18n)
+**Goal:** Port logic modules exactly as-is into the mobile codebase so data behavior matches web app.
 
 **Tasks**
-- Port `types.utils.ts` → mobile `types.ts`.
-- Port `i18n.utils.ts` → mobile `i18n.ts`.
-- Port `moonApi.ts` + include `moonData.json` as app asset/module.
+- Copy `types.utils.ts` logic into mobile `types.ts`.
+- Copy `i18n.utils.ts` logic into mobile `i18n.ts`.
+- Copy `moonApi.ts` logic + include `moonData.json` as app asset/module.
 - Add unit tests for key selectors (`getYearsFromMoonData`, `getMoonData`).
 
 **Deliverable / commit scope**
