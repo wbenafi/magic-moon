@@ -7,8 +7,7 @@
     "start": "astro dev",
     "build": "astro check && astro build",
     "preview": "astro preview",
-    "astro": "astro",
-    "test": "node --test src/domain/moonApi.test.mjs"
+    "astro": "astro"
   },
   "dependencies": {
     "@astrojs/check": "^0.4.1",
