@@ -15,9 +15,14 @@
         "src/lib/*"
       ]
     },
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "jsx": "react-jsx",
     "jsxImportSource": "react"
   },
-  "extends": "astro/tsconfigs/strict"
+  "extends": "astro/tsconfigs/strict",
+  "exclude": [
+    "apps/mobile"
+  ]
 }
